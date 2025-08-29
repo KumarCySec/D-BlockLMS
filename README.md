@@ -5,6 +5,7 @@ A mobile-first library management system designed specifically for D-Block Ladie
 ## 🎯 Project Overview
 
 The D-Block Library Management System is a comprehensive web application that manages:
+
 - **Inventory Management**: Books, Laptops, and Kits donated by alumni
 - **User Roles**: Admin, Incharge, Volunteer, and Student with hierarchical permissions
 - **Approval Workflow**: Request-based checkout system with volunteer/incharge approval
@@ -25,6 +26,7 @@ The D-Block Library Management System is a comprehensive web application that ma
 ## 📋 Features
 
 ### Core Features
+
 - ✅ User registration with approval workflow
 - ✅ Inventory management with donor tracking
 - ✅ Request-based checkout with approval system
@@ -39,6 +41,7 @@ The D-Block Library Management System is a comprehensive web application that ma
 - ✅ Audit trails for all operations
 
 ### Advanced Features
+
 - ✅ Mobile-first responsive design
 - ✅ Role-based access control
 - ✅ PII encryption and data protection
@@ -72,35 +75,42 @@ D-BlockLMS/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Python 3.11+
 - Git
 - Virtual environment support
 
 ### Development Setup
+
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/KumarCySec/D-BlockLMS.git
    cd D-BlockLMS
    ```
 
 2. Create and activate virtual environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. Install dependencies (after implementation begins):
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. Set up environment variables:
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 5. Initialize database:
+
    ```bash
    flask db upgrade
    flask seed-data
@@ -131,6 +141,7 @@ See [tasks.md](.kiro/specs/library-management-system/tasks.md) for detailed impl
 ## 🔧 Technology Stack
 
 ### Backend
+
 - **Framework**: Flask with blueprints
 - **ORM**: SQLAlchemy
 - **Authentication**: Flask-Login + bcrypt
@@ -139,6 +150,7 @@ See [tasks.md](.kiro/specs/library-management-system/tasks.md) for detailed impl
 - **Scheduling**: APScheduler (dev) / Cron jobs (production)
 
 ### Frontend
+
 - **UI Framework**: Bootstrap 5
 - **JavaScript**: Vanilla JS with minimal libraries
 - **Icons**: Bootstrap Icons
@@ -146,11 +158,13 @@ See [tasks.md](.kiro/specs/library-management-system/tasks.md) for detailed impl
 - **PWA**: Service Worker for notifications
 
 ### Database
+
 - **Development**: SQLite
 - **Production**: PostgreSQL
 - **Search**: SQLite FTS5 / PostgreSQL full-text search
 
 ### Security
+
 - **HTTPS**: Required in production
 - **CSRF**: Protection for all forms
 - **Rate Limiting**: Login attempts and API calls

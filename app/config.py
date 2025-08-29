@@ -1,0 +1,81 @@
+"""
+Configuration settings for D-Block Library Management System
+"""
+import os
+from datetime import timedelta
+
+
+class Config:
+    """Base configuration"""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_RECORD_QUERIES = True
+    
+    # Security settings
+    WTF_CSRF_TIME_LIMIT = None
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # Application settings
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file upload
+    LANGUAGES = ['en']
+    
+    # Notification settings
+    NOTIFICATION_RATE_LIMIT = 3  # Max notifications per item per day
+    
+    # Fine settings
+    DEFAULT_FINE_RATE = 5.00  # Default daily fine rate
+    MAX_RENEWALS = 4
+    DEFAULT_LOAN_DAYS = 7
+    
+    @staticmethod
+    def init_app(app):
+        pass
+
+
+class DevelopmentConfig(Config):
+    """Development configuration"""
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(os.path.dirname(os.path.dirname(__file__)), 'library.db')
+    
+    # Disable CSRF in development for easier testing
+    WTF_CSRF_ENABLED = False
+    SESSION_COOKIE_SECURE = False
+
+
+class TestingConfig(Config):
+    """Testing configuration"""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+    SESSION_COOKIE_SECURE = False
+
+
+class ProductionConfig(Config):
+    """Production configuration"""
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'postgresql://user:password@localhost/library_db'
+    
+    # Enhanced security for production
+    FORCE_HTTPS = True
+    
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+        
+        # Force HTTPS in production
+        @app.before_request
+        def force_https():
+            if not request.is_secure and app.config.get('FORCE_HTTPS'):
+                return redirect(request.url.replace('http://', 'https://'))
+
+
+config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}

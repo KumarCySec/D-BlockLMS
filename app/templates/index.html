@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">Welcome to D-Block Library</h1>
+        <p class="lead mb-4">
+            Your digital gateway to books, laptops, and educational resources donated by our alumni community.
+        </p>
+        
+        {% if not current_user.is_authenticated %}
+        <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">Login</a>
+        </div>
+        {% else %}
+        <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-book display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Browse Books</h5>
+                <p class="card-text">Discover a wide collection of books donated by our alumni across various subjects and genres.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-laptop display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Borrow Laptops</h5>
+                <p class="card-text">Access laptops and technical equipment for your academic projects and research work.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-box display-4 text-primary mb-3"></i>
+                <h5 class="card-title">Educational Kits</h5>
+                <p class="card-text">Explore educational kits and learning materials to enhance your practical knowledge.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

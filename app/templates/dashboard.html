@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Welcome, {{ current_user.name }}!</h2>
+        <p class="text-muted">{{ current_user.branch }} - {{ current_user.batch }}</p>
+        
+        {% if current_user.is_pending_approval() %}
+        <div class="alert alert-warning">
+            <i class="bi bi-clock"></i> Your account is pending approval. Please wait for an administrator to activate your account.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if current_user.is_active_user() %}
+<div class="row mt-4">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Active Checkouts</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-book-half display-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Pending Requests</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clock-history display-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Overdue Items</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-exclamation-triangle display-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Waitlist Items</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-list-ul display-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">No recent activity to display.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-primary">Browse Inventory</a>
+                    <a href="#" class="btn btn-outline-primary">View My Transactions</a>
+                    <a href="#" class="btn btn-outline-secondary">Join Waitlist</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
