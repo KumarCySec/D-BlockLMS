@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Limited - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="text-center">
+            <h1 class="display-1 text-muted">429</h1>
+            <h2>Too Many Requests</h2>
+            <p class="lead">You have exceeded the rate limit. Please try again later.</p>
+            <a href="javascript:history.back()" class="btn btn-primary">Go Back</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Go Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

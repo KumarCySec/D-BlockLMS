@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Validation Error - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="text-center">
+            <h1 class="display-1 text-muted">422</h1>
+            <h2>Validation Error</h2>
+            <p class="lead">The submitted data could not be processed.</p>
+            <a href="javascript:history.back()" class="btn btn-primary">Go Back</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Go Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

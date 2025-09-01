@@ -80,5 +80,55 @@ def create_admin():
     print(f"Admin user '{name}' created successfully!")
 
 
+@app.cli.command()
+@app.cli.option('--days', default=90, help='Number of days to retain audit logs')
+def cleanup_audit_logs(days):
+    """Clean up old audit logs"""
+    from app.models.audit_log import AuditLog
+    
+    deleted_count = AuditLog.cleanup_old_logs(days)
+    print(f"Cleaned up {deleted_count} audit log entries older than {days} days")
+
+
+@app.cli.command()
+def audit_stats():
+    """Show audit log statistics"""
+    from app.models.audit_log import AuditLog, AuditAction, AuditSeverity
+    from datetime import datetime, timedelta
+    
+    total_logs = AuditLog.query.count()
+    print(f"Total audit logs: {total_logs}")
+    
+    # Last 24 hours
+    yesterday = datetime.utcnow() - timedelta(hours=24)
+    recent_logs = AuditLog.query.filter(AuditLog.created_at >= yesterday).count()
+    print(f"Logs in last 24 hours: {recent_logs}")
+    
+    # By severity
+    for severity in AuditSeverity:
+        count = AuditLog.query.filter(AuditLog.severity == severity).count()
+        print(f"{severity.value.title()} logs: {count}")
+    
+    # Security events in last 24 hours
+    security_events = AuditLog.get_security_events(24)
+    print(f"Security events in last 24 hours: {len(security_events)}")
+
+
+@app.cli.command()
+@app.cli.option('--output', default='audit_export.json', help='Output file name')
+def export_audit_logs(output):
+    """Export audit logs to JSON file"""
+    from app.models.audit_log import AuditLog
+    import json
+    
+    logs = AuditLog.query.order_by(AuditLog.created_at.desc()).all()
+    logs_data = [log.to_dict() for log in logs]
+    
+    with open(output, 'w') as f:
+        json.dump(logs_data, f, indent=2, default=str)
+    
+    print(f"Exported {len(logs_data)} audit logs to {output}")
+
+
 if __name__ == '__main__':
     app.run(debug=True)

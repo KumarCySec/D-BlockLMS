@@ -4,35 +4,35 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 
 ## Phase 1: Foundation & Core Infrastructure
 
-- [-] 1. Set up Flask application structure and core configuration
+- [ ] 1. Set up Flask application structure and core configuration
   - Create Flask app factory pattern with blueprints
   - Configure SQLAlchemy with database connection
   - Set up environment configuration (.env handling)
   - Create basic project structure (app/, tests/, migrations/)
   - _Requirements: 1.1, 13.1, 13.2_
 
-- [ ] 1.1 Implement database models for core entities
+- [x] 1.1 Implement database models for core entities
   - Create User model with authentication fields and relationships
   - Create Role model with permissions system
   - Create Department model with basic CRUD (Admin can create/edit/delete, Incharge can view/edit their department)
   - Set up database migrations with Flask-Migrate
   - _Requirements: 1.1, 1.2, 15.1_
 
-- [ ] 1.2 Create authentication and session management system
+- [x] 1.2 Create authentication and session management system
   - Implement user registration with pending approval status
   - Create login/logout functionality with bcrypt password hashing
   - Set up session management and security headers
   - Add role-based access control decorators
   - _Requirements: 1.1, 1.2, 1.3, 13.1, 13.5_
 
-- [ ] 1.3 Build basic API structure and error handling
+- [x] 1.3 Build basic API structure and error handling
   - Create Flask blueprints for different modules
   - Implement standardized JSON API responses
   - Add comprehensive error handling and validation
   - Set up CSRF protection for API endpoints
   - _Requirements: 13.5, 14.1_
 
-- [ ] 1.4 Create audit logging system
+- [x] 1.4 Create audit logging system
   - Implement AuditLog model with comprehensive tracking
   - Create audit service for logging all user actions
   - Add audit decorators for automatic action logging
