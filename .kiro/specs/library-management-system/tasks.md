@@ -41,28 +41,28 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 
 ## Phase 2: Inventory & Donor Management
 
-- [ ] 2. Implement inventory and donor management system
+- [x] 2. Implement inventory and donor management system
   - Create InventoryItem model with availability tracking
   - Create Donor model with alumni information
   - Implement inventory CRUD operations with atomic quantity updates
   - Add donor management with complete contact information
   - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.4_
 
-- [ ] 2.1 Build search and filtering functionality
+- [x] 2.1 Build search and filtering functionality
   - Implement full-text search using SQLite FTS5 for development
   - Create advanced filtering by department, type, language, availability
   - Add sorting options (popularity, date, title, author)
   - Implement pagination and result optimization
   - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 2.2 Create inventory management APIs
+- [x] 2.2 Create inventory management APIs
   - Build REST endpoints for inventory CRUD operations
   - Implement search API with comprehensive filtering
   - Add inventory item detail views with history
   - Create donor management API endpoints (donors can be added independently and linked to inventory items)
   - _Requirements: 2.1, 2.4, 3.1, 16.1, 16.2_
 
-- [ ] 2.3 Develop mobile-first inventory UI
+- [x] 2.3 Develop mobile-first inventory UI
   - Create responsive inventory browsing interface
   - Build search and filter components with touch-friendly design
   - Implement inventory item cards with donor information

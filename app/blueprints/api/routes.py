@@ -43,12 +43,34 @@ class APIResponse:
     
     @staticmethod
     def validation_error(errors):
-        """Validation error response"""
+        """Validation error response with field-specific messages"""
+        # Format validation errors for better user experience
+        formatted_errors = {}
+        
+        if isinstance(errors, dict):
+            for field, messages in errors.items():
+                if isinstance(messages, list):
+                    formatted_errors[field] = messages[0] if messages else "Invalid value"
+                else:
+                    formatted_errors[field] = str(messages)
+        else:
+            formatted_errors = {"general": str(errors)}
+        
+        # Create user-friendly message
+        if len(formatted_errors) == 1:
+            field, message = next(iter(formatted_errors.items()))
+            if field == "general":
+                user_message = message
+            else:
+                user_message = f"{field.replace('_', ' ').title()}: {message}"
+        else:
+            user_message = "Please check the following fields: " + ", ".join(formatted_errors.keys())
+        
         return APIResponse.error(
-            message="Validation failed",
+            message=user_message,
             status_code=422,
             error_code="VALIDATION_ERROR",
-            details=errors
+            details=formatted_errors
         )
 
 

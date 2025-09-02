@@ -35,6 +35,11 @@ class Config:
     RATELIMIT_DEFAULT = "100 per hour"
     RATELIMIT_ENABLED = True
     
+    # Redis settings for caching
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    CACHE_DEFAULT_TIMEOUT = 600  # 10 minutes
+    CACHE_ENABLED = True
+    
     # Audit logging settings
     AUDIT_LOG_RETENTION_DAYS = 365  # 1 year retention
     AUDIT_LOG_CLEANUP_ENABLED = True
@@ -62,6 +67,9 @@ class DevelopmentConfig(Config):
     # Enable CSRF in development for proper testing
     WTF_CSRF_ENABLED = True
     SESSION_COOKIE_SECURE = False
+    
+    # Development Redis (optional)
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/1')  # Use DB 1 for dev
 
 
 class TestingConfig(Config):
@@ -70,6 +78,10 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     SESSION_COOKIE_SECURE = False
+    
+    # Disable Redis in testing
+    CACHE_ENABLED = False
+    REDIS_URL = None
 
 
 class ProductionConfig(Config):

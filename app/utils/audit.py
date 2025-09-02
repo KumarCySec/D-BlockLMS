@@ -375,6 +375,32 @@ def audit_data_change(target_type, get_target_info=None):
     return decorator
 
 
+def audit_action(actor_id, action, target_type=None, target_id=None, details=None):
+    """Simple audit logging function for API endpoints"""
+    from app.models.audit_log import AuditLog
+    from app import db
+    from flask import request
+    
+    try:
+        audit_log = AuditLog(
+            actor_id=actor_id,
+            action=action,
+            target_type=target_type,
+            target_id=target_id,
+            details=details,
+            ip_address=request.remote_addr if request else None,
+            user_agent=request.headers.get('User-Agent') if request else None
+        )
+        
+        db.session.add(audit_log)
+        db.session.commit()
+        
+    except Exception as e:
+        # Don't let audit logging failures break the main operation
+        from flask import current_app
+        current_app.logger.error(f"Audit logging failed: {e}")
+
+
 class AuditContext:
     """Context manager for batch audit operations"""
     

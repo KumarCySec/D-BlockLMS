@@ -1,0 +1,530 @@
+{% extends "base.html" %}
+
+{% block title %}Add Inventory Item - D-Block Library{% endblock %}
+
+{% block head %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .donor-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 0.375rem 0.375rem;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .donor-result-item {
+        padding: 0.75rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .donor-result-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .donor-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .selected-donor {
+        background: #e7f3ff;
+        border: 1px solid #007bff;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+    }
+    
+    .image-preview {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 0.375rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-plus-circle"></i> Add Inventory Item</h2>
+        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Inventory
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <form id="addItemForm" enctype="multipart/form-data">
+                <!-- Item Type Selection -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-label">Item Type <span class="text-danger">*</span></label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="item_type" id="type_book" value="book" checked>
+                            <label class="btn btn-outline-primary" for="type_book">
+                                <i class="bi bi-book"></i> Book
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="item_type" id="type_laptop" value="laptop">
+                            <label class="btn btn-outline-primary" for="type_laptop">
+                                <i class="bi bi-laptop"></i> Laptop
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="item_type" id="type_kit" value="kit">
+                            <label class="btn btn-outline-primary" for="type_kit">
+                                <i class="bi bi-box"></i> Kit
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Basic Information -->
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="sku_code" class="form-label">SKU Code</label>
+                        <input type="text" class="form-control" id="sku_code" name="sku_code">
+                        <div class="form-text">Optional unique identifier</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="authors" class="form-label">Authors/Manufacturer</label>
+                        <input type="text" class="form-control" id="authors" name="authors">
+                        <div class="form-text">For books: Author names. For devices: Manufacturer</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="language" class="form-label">Language</label>
+                        <select class="form-select" id="language" name="language">
+                            <option value="">Select Language</option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Tamil">Tamil</option>
+                            <option value="Telugu">Telugu</option>
+                            <option value="Kannada">Kannada</option>
+                            <option value="Malayalam">Malayalam</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="published_date" class="form-label">Published Date</label>
+                        <input type="date" class="form-control" id="published_date" name="published_date">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" 
+                              placeholder="Brief description of the item..."></textarea>
+                </div>
+                
+                <!-- Donor Information -->
+                <div class="mb-4">
+                    <label class="form-label">Donor <span class="text-danger">*</span></label>
+                    <div class="position-relative">
+                        <input type="text" class="form-control" id="donorSearch" 
+                               placeholder="Search for existing donor or type new donor name..."
+                               autocomplete="off">
+                        <div class="donor-search-results" id="donorSearchResults"></div>
+                    </div>
+                    
+                    <input type="hidden" id="donor_id" name="donor_id">
+                    
+                    <div id="selectedDonor" class="selected-donor d-none">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong id="selectedDonorName"></strong>
+                                <div class="text-muted" id="selectedDonorDetails"></div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelectedDonor()">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newDonorModal">
+                            <i class="bi bi-person-plus"></i> Add New Donor
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quantity and Department -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="total_quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="total_quantity" name="total_quantity" 
+                               min="1" value="1" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="department_id" class="form-label">Department</label>
+                        <select class="form-select" id="department_id" name="department_id">
+                            <option value="">Select Department</option>
+                            <!-- Options loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date_of_donation" class="form-label">Donation Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="date_of_donation" name="date_of_donation" required>
+                    </div>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Add Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- New Donor Modal -->
+<div class="modal fade" id="newDonorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Donor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newDonorForm">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="donor_name" class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="donor_name" name="name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="donor_branch" class="form-label">Branch <span class="text-danger">*</span></label>
+                            <select class="form-select" id="donor_branch" name="branch" required>
+                                <option value="">Select Branch</option>
+                                <option value="CSE">Computer Science Engineering</option>
+                                <option value="ECE">Electronics & Communication</option>
+                                <option value="EEE">Electrical & Electronics</option>
+                                <option value="CIVIL">Civil Engineering</option>
+                                <option value="AUTO">Automobile Engineering</option>
+                                <option value="MECH">Mechanical Engineering</option>
+                                <option value="IT">Information Technology</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="donor_batch" class="form-label">Batch <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="donor_batch" name="batch" 
+                                   placeholder="e.g., 2020-2024" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="donor_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="donor_email" name="email">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="donor_phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="donor_phone" name="phone">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="donor_address" class="form-label">Address</label>
+                        <textarea class="form-control" id="donor_address" name="address" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="donor_notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="donor_notes" name="notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveDonor()">Save Donor</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class AddItemManager {
+    constructor() {
+        this.selectedDonor = null;
+        this.searchTimeout = null;
+        this.init();
+    }
+    
+    init() {
+        this.bindEvents();
+        this.loadDepartments();
+        this.setDefaultDate();
+    }
+    
+    bindEvents() {
+        // Form submission
+        document.getElementById('addItemForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.submitForm();
+        });
+        
+        // Donor search
+        const donorSearch = document.getElementById('donorSearch');
+        donorSearch.addEventListener('input', (e) => {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                this.searchDonors(e.target.value);
+            }, 300);
+        });
+        
+        donorSearch.addEventListener('focus', () => {
+            if (donorSearch.value.length >= 2) {
+                this.searchDonors(donorSearch.value);
+            }
+        });
+        
+        donorSearch.addEventListener('blur', () => {
+            setTimeout(() => this.hideDonorResults(), 200);
+        });
+    }
+    
+    async loadDepartments() {
+        try {
+            const response = await fetch('/api/departments');
+            const data = await response.json();
+            
+            if (data.success) {
+                const select = document.getElementById('department_id');
+                select.innerHTML = '<option value="">Select Department</option>';
+                
+                data.data.departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.id;
+                    option.textContent = dept.name;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading departments:', error);
+        }
+    }
+    
+    setDefaultDate() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date_of_donation').value = today;
+    }
+    
+    async searchDonors(query) {
+        if (query.length < 2) {
+            this.hideDonorResults();
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/donors?q=${encodeURIComponent(query)}&per_page=10`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderDonorResults(data.data.donors);
+            }
+        } catch (error) {
+            console.error('Error searching donors:', error);
+        }
+    }
+    
+    renderDonorResults(donors) {
+        const resultsEl = document.getElementById('donorSearchResults');
+        
+        if (donors.length === 0) {
+            this.hideDonorResults();
+            return;
+        }
+        
+        const html = donors.map(donor => `
+            <div class="donor-result-item" onclick="addItemManager.selectDonor(${donor.id}, '${this.escapeHtml(donor.name)}', '${donor.branch}', '${donor.batch}')">
+                <div><strong>${this.escapeHtml(donor.name)}</strong></div>
+                <div class="text-muted small">${donor.branch} - ${donor.batch}</div>
+            </div>
+        `).join('');
+        
+        resultsEl.innerHTML = html;
+        resultsEl.style.display = 'block';
+    }
+    
+    hideDonorResults() {
+        document.getElementById('donorSearchResults').style.display = 'none';
+    }
+    
+    selectDonor(id, name, branch, batch) {
+        this.selectedDonor = { id, name, branch, batch };
+        
+        document.getElementById('donor_id').value = id;
+        document.getElementById('donorSearch').value = name;
+        
+        document.getElementById('selectedDonorName').textContent = name;
+        document.getElementById('selectedDonorDetails').textContent = `${branch} - ${batch}`;
+        document.getElementById('selectedDonor').classList.remove('d-none');
+        
+        this.hideDonorResults();
+    }
+    
+    async submitForm() {
+        const form = document.getElementById('addItemForm');
+        const formData = new FormData(form);
+        
+        // Validate required fields
+        if (!this.selectedDonor) {
+            alert('Please select a donor');
+            return;
+        }
+        
+        // Convert FormData to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            if (value) data[key] = value;
+        });
+        
+        // Convert date strings to proper format
+        if (data.published_date) {
+            data.published_date = data.published_date;
+        }
+        if (data.date_of_donation) {
+            data.date_of_donation = data.date_of_donation;
+        }
+        
+        // Convert quantity to number
+        data.total_quantity = parseInt(data.total_quantity);
+        if (data.department_id) {
+            data.department_id = parseInt(data.department_id);
+        }
+        
+        try {
+            const response = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Item added successfully!');
+                window.location.href = '/inventory';
+            } else {
+                this.showValidationErrors(result.error.details || {});
+                alert(result.message || 'Failed to add item');
+            }
+        } catch (error) {
+            console.error('Error adding item:', error);
+            alert('Failed to add item');
+        }
+    }
+    
+    showValidationErrors(errors) {
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+        
+        // Show new errors
+        Object.entries(errors).forEach(([field, messages]) => {
+            const input = document.querySelector(`[name="${field}"]`);
+            if (input) {
+                input.classList.add('is-invalid');
+                const feedback = input.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.textContent = Array.isArray(messages) ? messages[0] : messages;
+                }
+            }
+        });
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
+// Global functions
+function clearSelectedDonor() {
+    addItemManager.selectedDonor = null;
+    document.getElementById('donor_id').value = '';
+    document.getElementById('donorSearch').value = '';
+    document.getElementById('selectedDonor').classList.add('d-none');
+}
+
+function resetForm() {
+    document.getElementById('addItemForm').reset();
+    clearSelectedDonor();
+    addItemManager.setDefaultDate();
+}
+
+async function saveDonor() {
+    const form = document.getElementById('newDonorForm');
+    const formData = new FormData(form);
+    
+    const data = {};
+    formData.forEach((value, key) => {
+        if (value) data[key] = value;
+    });
+    
+    try {
+        const response = await fetch('/api/donors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const donor = result.data.donor;
+            addItemManager.selectDonor(donor.id, donor.name, donor.branch, donor.batch);
+            
+            // Close modal and reset form
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newDonorModal'));
+            modal.hide();
+            form.reset();
+            
+            alert('Donor added successfully!');
+        } else {
+            alert(result.message || 'Failed to add donor');
+        }
+    } catch (error) {
+        console.error('Error adding donor:', error);
+        alert('Failed to add donor');
+    }
+}
+
+// Initialize
+let addItemManager;
+document.addEventListener('DOMContentLoaded', () => {
+    addItemManager = new AddItemManager();
+});
+</script>
+{% endblock %}

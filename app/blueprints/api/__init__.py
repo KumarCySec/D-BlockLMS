@@ -9,4 +9,4 @@ bp = Blueprint('api', __name__)
 from app import csrf
 csrf.exempt(bp)
 
-from app.blueprints.api import routes
+from app.blueprints.api import routes, inventory

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Add Donor - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-person-plus"></i> Add New Donor</h2>
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Inventory
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form id="donorForm">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="branch" class="form-label">Branch <span class="text-danger">*</span></label>
+                                <select class="form-select" id="branch" name="branch" required>
+                                    <option value="">Select Branch</option>
+                                    <option value="CSE">Computer Science Engineering</option>
+                                    <option value="ECE">Electronics & Communication Engineering</option>
+                                    <option value="EEE">Electrical & Electronics Engineering</option>
+                                    <option value="CIVIL">Civil Engineering</option>
+                                    <option value="AUTO">Automobile Engineering</option>
+                                    <option value="MECH">Mechanical Engineering</option>
+                                    <option value="IT">Information Technology</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="batch" class="form-label">Batch <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="batch" name="batch" 
+                                       placeholder="e.g., 2020-2024" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" 
+                                      placeholder="Complete address..."></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Any additional information about the donor..."></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                <i class="bi bi-arrow-clockwise"></i> Reset
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Add Donor
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class DonorManager {
+    constructor() {
+        this.init();
+    }
+    
+    init() {
+        this.bindEvents();
+    }
+    
+    bindEvents() {
+        document.getElementById('donorForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.submitForm();
+        });
+    }
+    
+    async submitForm() {
+        const form = document.getElementById('donorForm');
+        const formData = new FormData(form);
+        
+        // Convert FormData to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            if (value.trim()) data[key] = value.trim();
+        });
+        
+        try {
+            const response = await fetch('/api/donors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Donor added successfully!');
+                window.location.href = '/inventory';
+            } else {
+                this.showValidationErrors(result.error.details || {});
+                alert(result.message || 'Failed to add donor');
+            }
+        } catch (error) {
+            console.error('Error adding donor:', error);
+            alert('Failed to add donor');
+        }
+    }
+    
+    showValidationErrors(errors) {
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+        
+        // Show new errors
+        Object.entries(errors).forEach(([field, messages]) => {
+            const input = document.querySelector(`[name="${field}"]`);
+            if (input) {
+                input.classList.add('is-invalid');
+                const feedback = input.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.textContent = Array.isArray(messages) ? messages[0] : messages;
+                }
+            }
+        });
+    }
+}
+
+function resetForm() {
+    document.getElementById('donorForm').reset();
+    document.querySelectorAll('.is-invalid').forEach(el => {
+        el.classList.remove('is-invalid');
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    new DonorManager();
+});
+</script>
+{% endblock %}

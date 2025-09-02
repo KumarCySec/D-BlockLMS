@@ -59,10 +59,12 @@ def create_app(config_name=None):
     from app.blueprints.auth import bp as auth_bp
     from app.blueprints.main import bp as main_bp
     from app.blueprints.api import bp as api_bp
+    from app.blueprints.inventory import bp as inventory_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(inventory_bp)
     
     # Import models to ensure they're registered
     from app.models import user, role, department
