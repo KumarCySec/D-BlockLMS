@@ -13,6 +13,16 @@ class ItemType(Enum):
     KIT = 'kit'
 
 
+class ItemStatus(Enum):
+    """Item status enumeration"""
+    AVAILABLE = 'available'
+    BORROWED = 'borrowed'
+    RESERVED = 'reserved'
+    MAINTENANCE = 'maintenance'
+    LOST = 'lost'
+    DAMAGED = 'damaged'
+
+
 class InventoryItem(db.Model):
     """Inventory item model for books, laptops, and kits"""
     __tablename__ = 'inventory_item'
@@ -21,8 +31,10 @@ class InventoryItem(db.Model):
     
     # Item identification
     item_type = db.Column(db.Enum(ItemType), nullable=False)
+    status = db.Column(db.Enum(ItemStatus), nullable=False, default=ItemStatus.AVAILABLE)
     title = db.Column(db.String(200), nullable=False)
     authors = db.Column(db.String(200), nullable=True)  # For books
+    isbn = db.Column(db.String(20), nullable=True)  # For books
     language = db.Column(db.String(50), nullable=True)
     published_date = db.Column(db.Date, nullable=True)
     sku_code = db.Column(db.String(50), unique=True, nullable=True)

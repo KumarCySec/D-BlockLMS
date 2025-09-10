@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Request Item - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Request Item</h2>
+                    <p class="text-muted mb-0">Submit a checkout request for library items</p>
+                </div>
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Inventory
+                </a>
+            </div>
+
+            <!-- Item Details Card -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-book"></i> Item Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="item-details">
+                                <!-- Item details will be loaded here -->
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Loading item details...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Request Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-clipboard-check"></i> Checkout Request
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="request-form">
+                                <input type="hidden" id="item-id" name="item_id">
+                                
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes (Optional)</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                              placeholder="Add any additional notes for your request..."></textarea>
+                                    <div class="form-text">
+                                        You can add any special requirements or notes for the library staff.
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Request Process:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Your request will be reviewed by library volunteers</li>
+                                        <li>You'll receive a notification once approved/rejected</li>
+                                        <li>Approved items can be collected from the library</li>
+                                        <li>Default loan period is 7 days with up to 4 renewals</li>
+                                    </ul>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="btn btn-outline-secondary me-md-2" onclick="history.back()">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                                        <i class="bi bi-send"></i> Submit Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- User Info -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-person"></i> Your Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <strong>{{ current_user.name }}</strong>
+                                </div>
+                                <div class="col-12 text-muted">
+                                    {{ current_user.roll_number }}
+                                </div>
+                                <div class="col-12 text-muted">
+                                    {{ current_user.branch }} - {{ current_user.batch }}
+                                </div>
+                                {% if current_user.department %}
+                                <div class="col-12 text-muted">
+                                    {{ current_user.department.name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Transactions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-list-check"></i> Your Active Requests
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="active-transactions">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle"></i> Request Submitted
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5>Request Submitted Successfully!</h5>
+                    <p class="text-muted mb-3">
+                        Your checkout request has been submitted and is pending approval.
+                    </p>
+                    <div class="alert alert-info">
+                        <strong>Transaction ID:</strong> <span id="transaction-id"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                    Go to Dashboard
+                </a>
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+                    Browse More Items
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const itemId = urlParams.get('item_id');
+    
+    if (!itemId) {
+        showError('No item specified');
+        return;
+    }
+    
+    document.getElementById('item-id').value = itemId;
+    
+    // Load item details
+    loadItemDetails(itemId);
+    
+    // Load user's active transactions
+    loadActiveTransactions();
+    
+    // Handle form submission
+    document.getElementById('request-form').addEventListener('submit', handleFormSubmit);
+});
+
+async function loadItemDetails(itemId) {
+    try {
+        const response = await fetch(`/api/inventory/${itemId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayItemDetails(data.data.item);
+        } else {
+            showError('Failed to load item details');
+        }
+    } catch (error) {
+        console.error('Error loading item details:', error);
+        showError('Failed to load item details');
+    }
+}
+
+function displayItemDetails(item) {
+    const container = document.getElementById('item-details');
+    
+    const availabilityBadge = item.is_available 
+        ? '<span class="badge bg-success">Available</span>'
+        : '<span class="badge bg-danger">Not Available</span>';
+    
+    container.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <h5 class="mb-2">${item.title}</h5>
+                ${item.authors ? `<p class="text-muted mb-2">by ${item.authors}</p>` : ''}
+                <div class="mb-3">
+                    <span class="badge bg-primary">${item.item_type}</span>
+                    ${item.language ? `<span class="badge bg-secondary">${item.language}</span>` : ''}
+                    ${availabilityBadge}
+                </div>
+                ${item.description ? `<p class="mb-2">${item.description}</p>` : ''}
+                ${item.sku_code ? `<small class="text-muted">SKU: ${item.sku_code}</small>` : ''}
+            </div>
+            <div class="col-md-4">
+                <div class="text-md-end">
+                    <div class="mb-2">
+                        <strong>Available:</strong> ${item.available_quantity}/${item.total_quantity}
+                    </div>
+                    ${item.donor ? `
+                        <div class="mb-2">
+                            <strong>Donated by:</strong><br>
+                            <small class="text-muted">
+                                ${item.donor.name}<br>
+                                ${item.donor.branch} - ${item.donor.batch}
+                            </small>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Disable form if item not available
+    if (!item.is_available) {
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('submit-btn').innerHTML = '<i class="bi bi-x-circle"></i> Not Available';
+        
+        container.innerHTML += `
+            <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle"></i>
+                This item is currently not available for checkout. You can join the waitlist to be notified when it becomes available.
+            </div>
+        `;
+    }
+}
+
+async function loadActiveTransactions() {
+    try {
+        const response = await fetch('/api/transactions?status=requested&status=approved&status=borrowed');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayActiveTransactions(data.data.transactions);
+        }
+    } catch (error) {
+        console.error('Error loading active transactions:', error);
+    }
+}
+
+function displayActiveTransactions(transactions) {
+    const container = document.getElementById('active-transactions');
+    
+    if (transactions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-2">
+                <i class="bi bi-inbox"></i>
+                <p class="mb-0 mt-2">No active requests</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = transactions.map(transaction => {
+        const statusBadge = getStatusBadge(transaction.status);
+        const dueDate = transaction.due_date ? new Date(transaction.due_date).toLocaleDateString() : '';
+        
+        return `
+            <div class="border-bottom pb-2 mb-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${transaction.item.title}</h6>
+                        <small class="text-muted">${transaction.transaction_id}</small>
+                    </div>
+                    <div class="text-end">
+                        ${statusBadge}
+                        ${dueDate ? `<br><small class="text-muted">Due: ${dueDate}</small>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = html;
+}
+
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('submit-btn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting...';
+    
+    try {
+        const formData = new FormData(event.target);
+        const requestData = {
+            item_id: parseInt(formData.get('item_id')),
+            notes: formData.get('notes') || null
+        };
+        
+        const response = await fetch('/api/transactions/request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success modal
+            document.getElementById('transaction-id').textContent = data.data.transaction.transaction_id;
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        } else {
+            showError(data.message || 'Failed to submit request');
+        }
+    } catch (error) {
+        console.error('Error submitting request:', error);
+        showError('Failed to submit request');
+    } finally {
+        // Restore button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'requested': '<span class="badge bg-warning">Pending</span>',
+        'approved': '<span class="badge bg-info">Approved</span>',
+        'borrowed': '<span class="badge bg-success">Borrowed</span>',
+        'overdue': '<span class="badge bg-danger">Overdue</span>',
+        'returned': '<span class="badge bg-secondary">Returned</span>',
+        'rejected': '<span class="badge bg-danger">Rejected</span>',
+        'cancelled': '<span class="badge bg-secondary">Cancelled</span>'
+    };
+    return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+}
+
+function showError(message) {
+    // Create and show error alert
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+}
+</script>
+{% endblock %}

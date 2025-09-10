@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+
+{% block title %}My Waitlist - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">My Waitlist</h2>
+                    <p class="text-muted mb-0">Track your position in queue for unavailable items</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshWaitlist()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <a href="{{ url_for('inventory.index') }}" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Browse Items
+                    </a>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="active-waitlists">-</h4>
+                                    <p class="mb-0">Active Waitlists</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-list-ol" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="notified-items">-</h4>
+                                    <p class="mb-0">Items Available</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-bell" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="avg-wait-time">-</h4>
+                                    <p class="mb-0">Avg. Wait Time (days)</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-clock" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waitlist Items -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list-ol"></i> Your Waitlist Queue
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-funnel"></i> Filter
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="filterWaitlist('all')">All Items</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterWaitlist('active')">Active</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterWaitlist('notified')">Available to Claim</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterWaitlist('expired')">Expired</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="waitlist-container">
+                        <!-- Waitlist items will be loaded here -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading your waitlist...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="text-muted">
+                        <span id="waitlist-info">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Claim Item Modal -->
+<div class="modal fade" id="claimModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Claim Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Great news!</strong> Your waitlisted item is now available.
+                </div>
+                
+                <div id="claim-item-details">
+                    <!-- Item details will be loaded here -->
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-clock"></i>
+                    <strong>Time Limit:</strong> You have <span id="claim-time-remaining"></span> to claim this item.
+                    If not claimed within this time, it will be offered to the next person in queue.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Not Now</button>
+                <button type="button" class="btn btn-success" id="confirm-claim-btn">
+                    <i class="bi bi-check-circle"></i> Claim Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Waitlist Modal -->
+<div class="modal fade" id="leaveWaitlistModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Leave Waitlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Are you sure?</strong> You will lose your current position in the queue.
+                </div>
+                
+                <div id="leave-waitlist-details">
+                    <!-- Item details will be loaded here -->
+                </div>
+                
+                <p class="text-muted">
+                    If you change your mind later, you'll need to join the waitlist again and will be placed at the end of the queue.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-leave-btn">
+                    <i class="bi bi-x-circle"></i> Leave Waitlist
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allWaitlistItems = [];
+let filteredWaitlistItems = [];
+let currentFilter = 'all';
+let currentClaimId = null;
+let currentLeaveId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadWaitlistItems();
+    
+    // Setup claim button
+    document.getElementById('confirm-claim-btn').addEventListener('click', handleClaimItem);
+    
+    // Setup leave waitlist button
+    document.getElementById('confirm-leave-btn').addEventListener('click', handleLeaveWaitlist);
+    
+    // Auto-refresh every 30 seconds for real-time updates
+    setInterval(loadWaitlistItems, 30000);
+});
+
+async function loadWaitlistItems() {
+    try {
+        const response = await fetch('/api/waitlist/my');
+        const data = await response.json();
+        
+        if (data.success) {
+            allWaitlistItems = data.data.waitlist_requests;
+            updateSummaryCards();
+            filterAndDisplayWaitlist();
+        } else {
+            showError('Failed to load waitlist items');
+        }
+    } catch (error) {
+        console.error('Error loading waitlist:', error);
+        showError('Failed to load waitlist items');
+    }
+}
+
+function updateSummaryCards() {
+    const stats = {
+        active: allWaitlistItems.filter(w => w.status === 'active').length,
+        notified: allWaitlistItems.filter(w => w.status === 'notified').length,
+        avgWaitTime: calculateAverageWaitTime()
+    };
+    
+    document.getElementById('active-waitlists').textContent = stats.active;
+    document.getElementById('notified-items').textContent = stats.notified;
+    document.getElementById('avg-wait-time').textContent = stats.avgWaitTime;
+}
+
+function calculateAverageWaitTime() {
+    const activeItems = allWaitlistItems.filter(w => w.status === 'active');
+    if (activeItems.length === 0) return '0';
+    
+    const totalWaitTime = activeItems.reduce((sum, item) => sum + (item.estimated_wait_days || 0), 0);
+    return Math.round(totalWaitTime / activeItems.length);
+}
+
+function filterAndDisplayWaitlist() {
+    // Filter by status
+    let filtered = allWaitlistItems;
+    if (currentFilter !== 'all') {
+        filtered = allWaitlistItems.filter(w => w.status === currentFilter);
+    }
+    
+    filteredWaitlistItems = filtered;
+    displayWaitlistItems();
+}
+
+function displayWaitlistItems() {
+    const container = document.getElementById('waitlist-container');
+    
+    if (filteredWaitlistItems.length === 0) {
+        const emptyMessage = currentFilter === 'all' 
+            ? 'You haven\'t joined any waitlists yet.'
+            : `No ${currentFilter} waitlist items found.`;
+            
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-list-ol text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">No Waitlist Items</h5>
+                <p class="text-muted">${emptyMessage}</p>
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Browse Library Items
+                </a>
+            </div>
+        `;
+        document.getElementById('waitlist-info').textContent = 'No waitlist items found';
+        return;
+    }
+    
+    // Sort by position for active items, then by created date
+    filteredWaitlistItems.sort((a, b) => {
+        if (a.status === 'active' && b.status === 'active') {
+            return a.position - b.position;
+        }
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    const html = filteredWaitlistItems.map(item => createWaitlistCard(item)).join('');
+    container.innerHTML = html;
+    
+    // Update info
+    document.getElementById('waitlist-info').textContent = 
+        `Showing ${filteredWaitlistItems.length} waitlist items`;
+}
+
+function createWaitlistCard(waitlistItem) {
+    const createdDate = new Date(waitlistItem.created_at).toLocaleDateString();
+    const statusBadge = getWaitlistStatusBadge(waitlistItem.status);
+    const item = waitlistItem.item;
+    
+    const isNotified = waitlistItem.status === 'notified';
+    const isExpired = waitlistItem.status === 'expired';
+    const timeRemaining = isNotified ? getTimeRemaining(waitlistItem.expires_at) : null;
+    
+    return `
+        <div class="border-bottom p-3 ${isNotified ? 'bg-light-success' : isExpired ? 'bg-light-danger' : ''}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-start">
+                        <div class="me-3">
+                            <i class="bi bi-${getItemIcon(item.item_type)} text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <a href="/inventory/${item.id}" class="text-decoration-none">
+                                    ${item.title}
+                                </a>
+                            </h6>
+                            ${item.authors ? `<p class="text-muted mb-1">by ${item.authors}</p>` : ''}
+                            <div class="d-flex gap-2 mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> Joined: ${createdDate}
+                                </small>
+                                ${waitlistItem.status === 'active' ? `
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> Est. wait: ${waitlistItem.estimated_wait_days || 0} days
+                                    </small>
+                                ` : ''}
+                            </div>
+                            ${waitlistItem.notes ? `<small class="text-muted"><i class="bi bi-chat-text"></i> ${waitlistItem.notes}</small>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="mb-2">
+                        ${statusBadge}
+                        ${waitlistItem.status === 'active' ? `<span class="badge bg-info ms-1">Position ${waitlistItem.position}</span>` : ''}
+                    </div>
+                    
+                    ${isNotified && timeRemaining ? `
+                        <div class="mb-2">
+                            <small class="text-success">
+                                <i class="bi bi-clock"></i> ${timeRemaining} remaining to claim
+                            </small>
+                        </div>
+                    ` : ''}
+                    
+                    ${waitlistItem.notified_at ? `
+                        <div class="mb-2">
+                            <small class="text-info">
+                                <i class="bi bi-bell"></i> Notified: ${new Date(waitlistItem.notified_at).toLocaleString()}
+                            </small>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="btn-group btn-group-sm">
+                        ${isNotified ? `
+                            <button class="btn btn-success" onclick="showClaimModal(${waitlistItem.id})" title="Claim Item">
+                                <i class="bi bi-check-circle"></i> Claim
+                            </button>
+                        ` : ''}
+                        
+                        ${waitlistItem.status === 'active' || waitlistItem.status === 'notified' ? `
+                            <button class="btn btn-outline-danger" onclick="showLeaveWaitlistModal(${waitlistItem.id})" title="Leave Waitlist">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        ` : ''}
+                        
+                        <a href="/inventory/${item.id}" class="btn btn-outline-secondary" title="View Item">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function getItemIcon(itemType) {
+    const icons = {
+        'book': 'book',
+        'laptop': 'laptop',
+        'kit': 'box'
+    };
+    return icons[itemType] || 'box';
+}
+
+function getWaitlistStatusBadge(status) {
+    const badges = {
+        'active': '<span class="badge bg-primary">In Queue</span>',
+        'notified': '<span class="badge bg-success">Available</span>',
+        'expired': '<span class="badge bg-danger">Expired</span>',
+        'claimed': '<span class="badge bg-info">Claimed</span>',
+        'cancelled': '<span class="badge bg-secondary">Cancelled</span>'
+    };
+    return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+}
+
+function getTimeRemaining(expiresAt) {
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const diff = expires - now;
+    
+    if (diff <= 0) return 'Expired';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    } else {
+        return `${minutes}m`;
+    }
+}
+
+function showClaimModal(waitlistId) {
+    const waitlistItem = allWaitlistItems.find(w => w.id === waitlistId);
+    if (!waitlistItem) return;
+    
+    currentClaimId = waitlistId;
+    
+    // Update modal content
+    document.getElementById('claim-item-details').innerHTML = `
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">${waitlistItem.item.title}</h6>
+                ${waitlistItem.item.authors ? `<p class="card-text">by ${waitlistItem.item.authors}</p>` : ''}
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary">${waitlistItem.item.item_type}</span>
+                    <span class="badge bg-info">Position ${waitlistItem.position}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('claim-time-remaining').textContent = 
+        getTimeRemaining(waitlistItem.expires_at);
+    
+    const modal = new bootstrap.Modal(document.getElementById('claimModal'));
+    modal.show();
+}
+
+function showLeaveWaitlistModal(waitlistId) {
+    const waitlistItem = allWaitlistItems.find(w => w.id === waitlistId);
+    if (!waitlistItem) return;
+    
+    currentLeaveId = waitlistId;
+    
+    // Update modal content
+    document.getElementById('leave-waitlist-details').innerHTML = `
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">${waitlistItem.item.title}</h6>
+                ${waitlistItem.item.authors ? `<p class="card-text">by ${waitlistItem.item.authors}</p>` : ''}
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary">${waitlistItem.item.item_type}</span>
+                    ${waitlistItem.status === 'active' ? `<span class="badge bg-info">Current Position: ${waitlistItem.position}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('leaveWaitlistModal'));
+    modal.show();
+}
+
+async function handleClaimItem() {
+    if (!currentClaimId) return;
+    
+    const confirmBtn = document.getElementById('confirm-claim-btn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Claiming...';
+    
+    try {
+        const response = await fetch(`/api/waitlist/${currentClaimId}/claim`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('claimModal'));
+            modal.hide();
+            
+            // Show success message
+            showSuccess(data.message);
+            
+            // Refresh data
+            loadWaitlistItems();
+        } else {
+            showError(data.message || 'Failed to claim item');
+        }
+    } catch (error) {
+        console.error('Error claiming item:', error);
+        showError('Failed to claim item');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+        currentClaimId = null;
+    }
+}
+
+async function handleLeaveWaitlist() {
+    if (!currentLeaveId) return;
+    
+    const confirmBtn = document.getElementById('confirm-leave-btn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Leaving...';
+    
+    try {
+        const response = await fetch(`/api/waitlist/${currentLeaveId}/leave`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('leaveWaitlistModal'));
+            modal.hide();
+            
+            // Show success message
+            showSuccess(data.message);
+            
+            // Refresh data
+            loadWaitlistItems();
+        } else {
+            showError(data.message || 'Failed to leave waitlist');
+        }
+    } catch (error) {
+        console.error('Error leaving waitlist:', error);
+        showError('Failed to leave waitlist');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+        currentLeaveId = null;
+    }
+}
+
+function filterWaitlist(filter) {
+    currentFilter = filter;
+    filterAndDisplayWaitlist();
+}
+
+function refreshWaitlist() {
+    loadWaitlistItems();
+}
+
+function showSuccess(message) {
+    const alertHtml = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = container.querySelector('.alert-success');
+        if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+function showError(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+}
+</script>
+
+<style>
+.bg-light-success {
+    background-color: #d1e7dd !important;
+}
+
+.bg-light-danger {
+    background-color: #f8d7da !important;
+}
+</style>
+{% endblock %}

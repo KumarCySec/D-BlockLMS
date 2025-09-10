@@ -5,6 +5,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 1: Foundation & Core Infrastructure
 
 - [ ] 1. Set up Flask application structure and core configuration
+
   - Create Flask app factory pattern with blueprints
   - Configure SQLAlchemy with database connection
   - Set up environment configuration (.env handling)
@@ -12,6 +13,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 1.1, 13.1, 13.2_
 
 - [x] 1.1 Implement database models for core entities
+
   - Create User model with authentication fields and relationships
   - Create Role model with permissions system
   - Create Department model with basic CRUD (Admin can create/edit/delete, Incharge can view/edit their department)
@@ -19,6 +21,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 1.1, 1.2, 15.1_
 
 - [x] 1.2 Create authentication and session management system
+
   - Implement user registration with pending approval status
   - Create login/logout functionality with bcrypt password hashing
   - Set up session management and security headers
@@ -26,6 +29,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 1.1, 1.2, 1.3, 13.1, 13.5_
 
 - [x] 1.3 Build basic API structure and error handling
+
   - Create Flask blueprints for different modules
   - Implement standardized JSON API responses
   - Add comprehensive error handling and validation
@@ -42,6 +46,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 2: Inventory & Donor Management
 
 - [x] 2. Implement inventory and donor management system
+
   - Create InventoryItem model with availability tracking
   - Create Donor model with alumni information
   - Implement inventory CRUD operations with atomic quantity updates
@@ -49,6 +54,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.4_
 
 - [x] 2.1 Build search and filtering functionality
+
   - Implement full-text search using SQLite FTS5 for development
   - Create advanced filtering by department, type, language, availability
   - Add sorting options (popularity, date, title, author)
@@ -56,6 +62,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
 - [x] 2.2 Create inventory management APIs
+
   - Build REST endpoints for inventory CRUD operations
   - Implement search API with comprehensive filtering
   - Add inventory item detail views with history
@@ -72,27 +79,30 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 3: Transaction & Approval Workflow
 
 - [ ] 3. Build transaction management system
+
   - Create Transaction model with state machine implementation
   - Implement TransactionCounter for unique ID generation (LIB2025-0001 format - consistent across all phases)
   - Create atomic checkout request and approval workflow
   - Add transaction history tracking with complete audit trail
   - _Requirements: 4.1, 4.2, 4.3, 4.6, 4.7, 4.8_
 
-- [ ] 3.1 Implement approval workflow with role-based permissions
+- [x] 3.1 Implement approval workflow with role-based permissions
+
   - Create approval endpoints for Volunteer/Incharge/Admin roles
   - Implement atomic inventory quantity updates during approval
   - Add transaction status notifications to users
   - Build approval dashboard for volunteers with pending requests
   - _Requirements: 4.2, 4.7, 1.4, 10.2_
 
-- [ ] 3.2 Create transaction APIs and validation
+- [x] 3.2 Create transaction APIs and validation
+
   - Build REST endpoints for transaction lifecycle management
   - Implement business rule validation (availability, permissions)
   - Add transaction history and status tracking
   - Create transaction search and filtering capabilities
   - _Requirements: 4.1, 4.2, 4.6, 14.2, 14.3_
 
-- [ ] 3.3 Develop transaction management UI
+- [x] 3.3 Develop transaction management UI
   - Create student checkout request interface
   - Build volunteer approval dashboard with transaction details
   - Implement transaction history views for users
@@ -101,28 +111,32 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 
 ## Phase 4: Renewals, Returns & Waitlist System
 
-- [ ] 4. Implement renewal and return management
+- [-] 4. Implement renewal and return management
+
   - Create renewal request system with 4-renewal limit enforcement
   - Implement return approval workflow with fine calculation
   - Add renewal conflict detection with waitlist checking
   - Build return processing with inventory quantity updates
   - _Requirements: 5.1, 5.2, 5.3, 5.5, 5.7_
 
-- [ ] 4.1 Build waitlist management system
+- [x] 4.1 Build waitlist management system
+
   - Create WaitlistRequest model with position tracking
   - Implement FIFO queue management for item availability
   - Add 24-hour claim window for waitlist notifications
   - Create waitlist position tracking and user notifications
   - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 4.2 Create fine calculation and tracking system
+- [x] 4.2 Create fine calculation and tracking system
+
   - Implement FineRecord model for immutable fine tracking
   - Create FineConfiguration model for customizable fine rules
   - Build daily fine calculation service with configurable rates
   - Add fine waiver functionality for Admin/Incharge
   - _Requirements: 5.4, 5.6, 22.1, 22.2, 22.3_
 
-- [ ] 4.3 Develop renewal and waitlist APIs
+- [x] 4.3 Develop renewal and waitlist APIs
+
   - Build renewal request and approval endpoints
   - Create waitlist join/leave functionality
   - Implement fine calculation and reporting APIs
@@ -139,6 +153,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 5: Volunteer Management & Scheduling
 
 - [ ] 5. Implement volunteer scheduling system
+
   - Create VolunteerSchedule model with 2-volunteer-per-department rule
   - Build schedule creation with validation and conflict detection
   - Implement default department rotation with customization
@@ -146,6 +161,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 7.1, 7.2, 7.3, 24.1, 24.2, 24.3_
 
 - [ ] 5.1 Build attendance tracking system
+
   - Create AttendanceLog model for volunteer check-in/out
   - Implement mobile check-in/out functionality
   - Add attendance validation and no-show detection
@@ -153,6 +169,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 27.1, 27.2, 27.3, 27.4, 27.5_
 
 - [ ] 5.2 Create library status management
+
   - Implement LibraryStatus model with toggle functionality
   - Build status broadcast system for all users
   - Add automated library closure with configurable times
@@ -160,6 +177,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 28.1, 28.2, 28.3_
 
 - [ ] 5.3 Develop volunteer management APIs
+
   - Build volunteer scheduling endpoints with validation
   - Create attendance tracking API for mobile check-in/out
   - Implement library status toggle and broadcast APIs
@@ -177,6 +195,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 6: Notification System & Background Jobs
 
 - [ ] 6. Implement notification system
+
   - Create NotificationSubscription model for web push
   - Build notification service with rate limiting and retry logic
   - Implement notification templates with localization support
@@ -185,6 +204,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.6, 10.7_
 
 - [ ] 6.1 Build background job system for PythonAnywhere
+
   - Create QueuedNotification model for database-based queuing
   - Implement notification processing without Redis dependency
   - Build cron job scripts for scheduled tasks
@@ -192,6 +212,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 10.1, 23.1, 23.2, 23.3_
 
 - [ ] 6.2 Create notification APIs and management
+
   - Build notification subscription and preference APIs
   - Implement notification sending with multiple channels
   - Add notification history and delivery status tracking
@@ -208,6 +229,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 7: Analytics, Reporting & Fine Management
 
 - [ ] 7. Build analytics and reporting system
+
   - Create role-based analytics dashboards (Admin/Incharge/Volunteer)
   - Implement borrowing trends and popular items analytics
   - Build donor contribution and inventory reports
@@ -215,6 +237,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 19.1, 19.2, 19.3_
 
 - [ ] 7.1 Implement comprehensive fine management
+
   - Create fine reporting system with per-student breakdowns
   - Build fine configuration interface for Admin
   - Implement fine waiver functionality with audit trails
@@ -222,6 +245,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 22.1, 22.2, 22.3, 22.4, 22.5_
 
 - [ ] 7.2 Create data export and reporting APIs
+
   - Build CSV export functionality for all major entities
   - Implement role-based data access and export restrictions
   - Add audit log export with filtering capabilities
@@ -238,6 +262,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 8: User Management & Advanced Features
 
 - [ ] 8. Implement comprehensive user management
+
   - Build user registration approval workflow
   - Create user profile management with PII encryption
   - Implement role assignment and permission management
@@ -245,6 +270,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 1.1, 1.2, 13.3, 13.6, 13.7, 25.1, 25.2_
 
 - [ ] 8.1 Create advanced user features
+
   - Build comprehensive user history and profile views
   - Implement user search and filtering capabilities
   - Add user statistics and activity tracking
@@ -252,6 +278,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 14.2, 14.3, 16.2, 16.4_
 
 - [ ] 8.2 Develop user management APIs
+
   - Build user CRUD operations with role-based access
   - Create user verification and approval endpoints
   - Implement user search and profile APIs
@@ -268,6 +295,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 9: System Configuration & Administration
 
 - [ ] 9. Build system configuration management
+
   - Create LibraryConfiguration model for all system settings
   - Implement policy management service for configurable rules
   - Build department rotation and scheduling customization
@@ -275,6 +303,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 15.1, 15.2, 15.5, 24.4, 25.3, 25.4_
 
 - [ ] 9.1 Implement security and privacy features
+
   - Add PII encryption for sensitive user data
   - Implement brute force protection and rate limiting
   - Create security headers and CORS configuration
@@ -282,6 +311,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 13.1, 13.2, 13.3, 13.5, 26.1, 26.4_
 
 - [ ] 9.2 Create system administration APIs
+
   - Build configuration management endpoints
   - Implement system health and monitoring APIs
   - Add backup and maintenance operation APIs
@@ -298,6 +328,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Phase 10: Testing, Optimization & Deployment
 
 - [ ] 10. Implement comprehensive testing suite
+
   - Create unit tests for all models and services
   - Build integration tests for API endpoints
   - Implement end-to-end tests for critical user workflows
@@ -305,6 +336,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: All requirements validation_
 
 - [ ] 10.1 Optimize performance and scalability
+
   - Add database indexes for critical queries
   - Implement query optimization for search and analytics
   - Create caching strategies for frequently accessed data
@@ -312,6 +344,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
   - _Requirements: 9.4, 11.4_
 
 - [ ] 10.2 Prepare for PythonAnywhere deployment
+
   - Configure application for PythonAnywhere environment
   - Set up database migrations and initial data seeding
   - Create deployment scripts and configuration
@@ -330,6 +363,7 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 ## Success Criteria
 
 Each task must be completed with:
+
 - Working code that integrates with previous tasks
 - Unit tests with >90% coverage for new functionality
 - Integration tests for API endpoints

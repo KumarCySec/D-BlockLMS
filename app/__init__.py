@@ -60,14 +60,16 @@ def create_app(config_name=None):
     from app.blueprints.main import bp as main_bp
     from app.blueprints.api import bp as api_bp
     from app.blueprints.inventory import bp as inventory_bp
+    from app.blueprints.transactions import bp as transactions_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(inventory_bp)
+    app.register_blueprint(transactions_bp, url_prefix='/transactions')
     
     # Import models to ensure they're registered
-    from app.models import user, role, department
+    from app.models import user, role, department, transaction
     
     # Register error handlers
     register_error_handlers(app)

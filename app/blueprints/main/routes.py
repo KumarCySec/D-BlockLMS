@@ -17,3 +17,10 @@ def index():
 def dashboard():
     """User dashboard"""
     return render_template('dashboard.html')
+
+
+@bp.route('/fines')
+@login_required_with_status
+def fines():
+    """User fines page"""
+    return render_template('fines.html')

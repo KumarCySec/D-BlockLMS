@@ -1,0 +1,671 @@
+{% extends "base.html" %}
+
+{% block title %}Approval Dashboard - D-Block Library{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Approval Dashboard</h2>
+                    <p class="text-muted mb-0">Review and approve checkout requests</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="filterTransactions('all')">All Requests</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterTransactions('requested')">Pending Only</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterTransactions('overdue')">Overdue Items</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="pending-count">-</h4>
+                                    <p class="mb-0">Pending Requests</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="borrowed-count">-</h4>
+                                    <p class="mb-0">Items Borrowed</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-book" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="overdue-count">-</h4>
+                                    <p class="mb-0">Overdue Items</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0" id="due-soon-count">-</h4>
+                                    <p class="mb-0">Due Soon</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-calendar-event" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list-check"></i> Transaction Requests
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <input type="search" class="form-control form-control-sm" placeholder="Search..." 
+                                   id="search-input" style="width: 200px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Student</th>
+                                    <th>Item</th>
+                                    <th>Requested</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-tbody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Loading transactions...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            <span id="results-info">Loading...</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="pagination">
+                                <!-- Pagination will be inserted here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="transaction-details">
+                <!-- Transaction details will be loaded here -->
+            </div>
+            <div class="modal-footer" id="transaction-actions">
+                <!-- Action buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approval Confirmation Modal -->
+<div class="modal fade" id="approvalModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approval-modal-title">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="approval-form">
+                    <input type="hidden" id="action-transaction-id">
+                    <input type="hidden" id="action-type">
+                    
+                    <div class="mb-3">
+                        <label for="action-notes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="action-notes" rows="3" 
+                                  placeholder="Add any notes for this action..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info" id="action-info">
+                        <!-- Action-specific information will be shown here -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirm-action-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentTransactions = [];
+let currentFilter = 'all';
+let currentPage = 1;
+let searchTimeout;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    loadTransactions();
+    
+    // Setup search
+    document.getElementById('search-input').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentPage = 1;
+            loadTransactions();
+        }, 300);
+    });
+    
+    // Setup approval form
+    document.getElementById('confirm-action-btn').addEventListener('click', handleActionConfirm);
+});
+
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/api/transactions/dashboard');
+        const data = await response.json();
+        
+        if (data.success) {
+            updateStatsCards(data.data);
+        }
+    } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+    }
+}
+
+function updateStatsCards(stats) {
+    document.getElementById('pending-count').textContent = stats.pending_requests || 0;
+    document.getElementById('borrowed-count').textContent = stats.borrowed_items || 0;
+    document.getElementById('overdue-count').textContent = stats.overdue_items || 0;
+    document.getElementById('due-soon-count').textContent = stats.due_soon || 0;
+}
+
+async function loadTransactions() {
+    try {
+        const searchQuery = document.getElementById('search-input').value;
+        let url = `/api/transactions?page=${currentPage}&per_page=20`;
+        
+        if (currentFilter !== 'all') {
+            if (currentFilter === 'overdue') {
+                url = '/api/transactions/overdue';
+            } else {
+                url += `&status=${currentFilter}`;
+            }
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            currentTransactions = data.data.transactions || data.data;
+            displayTransactions(currentTransactions);
+            
+            if (data.data.pagination) {
+                updatePagination(data.data.pagination);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+        showError('Failed to load transactions');
+    }
+}
+
+function displayTransactions(transactions) {
+    const tbody = document.getElementById('transactions-tbody');
+    
+    if (transactions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2 mb-0">No transactions found</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    const html = transactions.map(transaction => {
+        const requestedDate = new Date(transaction.requested_at).toLocaleDateString();
+        const dueDate = transaction.due_date ? new Date(transaction.due_date).toLocaleDateString() : '-';
+        const statusBadge = getStatusBadge(transaction.status);
+        
+        return `
+            <tr>
+                <td>
+                    <a href="#" onclick="showTransactionDetails(${transaction.id})" class="text-decoration-none">
+                        ${transaction.transaction_id}
+                    </a>
+                </td>
+                <td>
+                    <div>
+                        <strong>${transaction.user.name}</strong><br>
+                        <small class="text-muted">${transaction.user.roll_number}</small>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <strong>${transaction.item.title}</strong><br>
+                        <small class="text-muted">${transaction.item.item_type}</small>
+                    </div>
+                </td>
+                <td>${requestedDate}</td>
+                <td>${statusBadge}</td>
+                <td>${dueDate}</td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        ${getActionButtons(transaction)}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    tbody.innerHTML = html;
+    
+    // Update results info
+    document.getElementById('results-info').textContent = 
+        `Showing ${transactions.length} transaction${transactions.length !== 1 ? 's' : ''}`;
+}
+
+function getActionButtons(transaction) {
+    const buttons = [];
+    
+    if (transaction.status === 'requested') {
+        buttons.push(`
+            <button class="btn btn-success btn-sm" onclick="showApprovalModal(${transaction.id}, 'approve')" 
+                    title="Approve Request">
+                <i class="bi bi-check"></i>
+            </button>
+        `);
+        buttons.push(`
+            <button class="btn btn-danger btn-sm" onclick="showApprovalModal(${transaction.id}, 'reject')" 
+                    title="Reject Request">
+                <i class="bi bi-x"></i>
+            </button>
+        `);
+    } else if (transaction.status === 'approved') {
+        buttons.push(`
+            <button class="btn btn-primary btn-sm" onclick="showApprovalModal(${transaction.id}, 'issue')" 
+                    title="Issue Item">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        `);
+    } else if (transaction.status === 'borrowed' || transaction.status === 'overdue') {
+        buttons.push(`
+            <button class="btn btn-info btn-sm" onclick="showApprovalModal(${transaction.id}, 'return')" 
+                    title="Process Return">
+                <i class="bi bi-box-arrow-in-left"></i>
+            </button>
+        `);
+    }
+    
+    buttons.push(`
+        <button class="btn btn-outline-secondary btn-sm" onclick="showTransactionDetails(${transaction.id})" 
+                title="View Details">
+            <i class="bi bi-eye"></i>
+        </button>
+    `);
+    
+    return buttons.join('');
+}
+
+async function showTransactionDetails(transactionId) {
+    try {
+        const response = await fetch(`/api/transactions/${transactionId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayTransactionDetails(data.data.transaction);
+            const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+            modal.show();
+        } else {
+            showError('Failed to load transaction details');
+        }
+    } catch (error) {
+        console.error('Error loading transaction details:', error);
+        showError('Failed to load transaction details');
+    }
+}
+
+function displayTransactionDetails(transaction) {
+    const container = document.getElementById('transaction-details');
+    const actions = document.getElementById('transaction-actions');
+    
+    const requestedDate = new Date(transaction.requested_at).toLocaleString();
+    const approvedDate = transaction.approved_at ? new Date(transaction.approved_at).toLocaleString() : '-';
+    const dueDate = transaction.due_date ? new Date(transaction.due_date).toLocaleString() : '-';
+    const returnedDate = transaction.returned_at ? new Date(transaction.returned_at).toLocaleString() : '-';
+    
+    container.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Transaction Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>ID:</strong></td><td>${transaction.transaction_id}</td></tr>
+                    <tr><td><strong>Status:</strong></td><td>${getStatusBadge(transaction.status)}</td></tr>
+                    <tr><td><strong>Requested:</strong></td><td>${requestedDate}</td></tr>
+                    <tr><td><strong>Approved:</strong></td><td>${approvedDate}</td></tr>
+                    <tr><td><strong>Due Date:</strong></td><td>${dueDate}</td></tr>
+                    <tr><td><strong>Returned:</strong></td><td>${returnedDate}</td></tr>
+                    <tr><td><strong>Renewals:</strong></td><td>${transaction.renew_count}/${transaction.max_renewals}</td></tr>
+                    ${transaction.fine_accumulated > 0 ? `<tr><td><strong>Fine:</strong></td><td>₹${transaction.fine_accumulated}</td></tr>` : ''}
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>Student Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Name:</strong></td><td>${transaction.user.name}</td></tr>
+                    <tr><td><strong>Roll Number:</strong></td><td>${transaction.user.roll_number}</td></tr>
+                    <tr><td><strong>Email:</strong></td><td>${transaction.user.email}</td></tr>
+                    <tr><td><strong>Department:</strong></td><td>${transaction.user.department || '-'}</td></tr>
+                </table>
+                
+                <h6 class="mt-3">Item Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Title:</strong></td><td>${transaction.item.title}</td></tr>
+                    <tr><td><strong>Type:</strong></td><td>${transaction.item.item_type}</td></tr>
+                    ${transaction.item.authors ? `<tr><td><strong>Authors:</strong></td><td>${transaction.item.authors}</td></tr>` : ''}
+                    ${transaction.item.sku_code ? `<tr><td><strong>SKU:</strong></td><td>${transaction.item.sku_code}</td></tr>` : ''}
+                </table>
+            </div>
+        </div>
+        
+        ${transaction.notes ? `
+            <div class="mt-3">
+                <h6>Notes</h6>
+                <div class="alert alert-light">${transaction.notes}</div>
+            </div>
+        ` : ''}
+        
+        ${transaction.approver ? `
+            <div class="mt-3">
+                <h6>Approval Information</h6>
+                <p class="mb-0">Approved by: <strong>${transaction.approver.name}</strong></p>
+                <p class="text-muted">Roles: ${transaction.approver.roles.join(', ')}</p>
+            </div>
+        ` : ''}
+    `;
+    
+    // Add action buttons
+    actions.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        ${getModalActionButtons(transaction)}
+    `;
+}
+
+function getModalActionButtons(transaction) {
+    const buttons = [];
+    
+    if (transaction.status === 'requested') {
+        buttons.push(`
+            <button class="btn btn-success" onclick="showApprovalModal(${transaction.id}, 'approve')">
+                <i class="bi bi-check"></i> Approve
+            </button>
+        `);
+        buttons.push(`
+            <button class="btn btn-danger" onclick="showApprovalModal(${transaction.id}, 'reject')">
+                <i class="bi bi-x"></i> Reject
+            </button>
+        `);
+    } else if (transaction.status === 'approved') {
+        buttons.push(`
+            <button class="btn btn-primary" onclick="showApprovalModal(${transaction.id}, 'issue')">
+                <i class="bi bi-box-arrow-right"></i> Issue Item
+            </button>
+        `);
+    } else if (transaction.status === 'borrowed' || transaction.status === 'overdue') {
+        buttons.push(`
+            <button class="btn btn-info" onclick="showApprovalModal(${transaction.id}, 'return')">
+                <i class="bi bi-box-arrow-in-left"></i> Process Return
+            </button>
+        `);
+    }
+    
+    return buttons.join('');
+}
+
+function showApprovalModal(transactionId, actionType) {
+    document.getElementById('action-transaction-id').value = transactionId;
+    document.getElementById('action-type').value = actionType;
+    document.getElementById('action-notes').value = '';
+    
+    const modal = document.getElementById('approvalModal');
+    const title = document.getElementById('approval-modal-title');
+    const info = document.getElementById('action-info');
+    const confirmBtn = document.getElementById('confirm-action-btn');
+    
+    const actionConfig = {
+        approve: {
+            title: 'Approve Request',
+            info: 'This will approve the checkout request and reserve the item for the student.',
+            btnClass: 'btn-success',
+            btnText: '<i class="bi bi-check"></i> Approve'
+        },
+        reject: {
+            title: 'Reject Request',
+            info: 'This will reject the checkout request. Please provide a reason in the notes.',
+            btnClass: 'btn-danger',
+            btnText: '<i class="bi bi-x"></i> Reject'
+        },
+        issue: {
+            title: 'Issue Item',
+            info: 'This will mark the item as issued to the student and start the loan period.',
+            btnClass: 'btn-primary',
+            btnText: '<i class="bi bi-box-arrow-right"></i> Issue'
+        },
+        return: {
+            title: 'Process Return',
+            info: 'This will process the item return and make it available for other students.',
+            btnClass: 'btn-info',
+            btnText: '<i class="bi bi-box-arrow-in-left"></i> Process Return'
+        }
+    };
+    
+    const config = actionConfig[actionType];
+    title.textContent = config.title;
+    info.innerHTML = `<i class="bi bi-info-circle"></i> ${config.info}`;
+    
+    confirmBtn.className = `btn ${config.btnClass}`;
+    confirmBtn.innerHTML = config.btnText;
+    
+    // Close transaction modal if open
+    const transactionModal = bootstrap.Modal.getInstance(document.getElementById('transactionModal'));
+    if (transactionModal) {
+        transactionModal.hide();
+    }
+    
+    const approvalModal = new bootstrap.Modal(modal);
+    approvalModal.show();
+}
+
+async function handleActionConfirm() {
+    const transactionId = document.getElementById('action-transaction-id').value;
+    const actionType = document.getElementById('action-type').value;
+    const notes = document.getElementById('action-notes').value;
+    const confirmBtn = document.getElementById('confirm-action-btn');
+    
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+    
+    try {
+        let endpoint = '';
+        let method = 'PUT';
+        
+        switch (actionType) {
+            case 'approve':
+                endpoint = `/api/transactions/${transactionId}/approve`;
+                break;
+            case 'reject':
+                endpoint = `/api/transactions/${transactionId}/reject`;
+                break;
+            case 'issue':
+                endpoint = `/api/transactions/${transactionId}/issue`;
+                break;
+            case 'return':
+                endpoint = `/api/transactions/${transactionId}/return`;
+                break;
+        }
+        
+        const response = await fetch(endpoint, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ notes: notes || null })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
+            modal.hide();
+            
+            // Show success message
+            showSuccess(data.message);
+            
+            // Refresh data
+            loadDashboardStats();
+            loadTransactions();
+        } else {
+            showError(data.message || 'Action failed');
+        }
+    } catch (error) {
+        console.error('Error processing action:', error);
+        showError('Failed to process action');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    }
+}
+
+function filterTransactions(filter) {
+    currentFilter = filter;
+    currentPage = 1;
+    loadTransactions();
+}
+
+function refreshDashboard() {
+    loadDashboardStats();
+    loadTransactions();
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'requested': '<span class="badge bg-warning">Pending</span>',
+        'approved': '<span class="badge bg-info">Approved</span>',
+        'borrowed': '<span class="badge bg-success">Borrowed</span>',
+        'overdue': '<span class="badge bg-danger">Overdue</span>',
+        'returned': '<span class="badge bg-secondary">Returned</span>',
+        'rejected': '<span class="badge bg-danger">Rejected</span>',
+        'cancelled': '<span class="badge bg-secondary">Cancelled</span>'
+    };
+    return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+}
+
+function showSuccess(message) {
+    const alertHtml = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = container.querySelector('.alert-success');
+        if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+function showError(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+}
+</script>
+{% endblock %}

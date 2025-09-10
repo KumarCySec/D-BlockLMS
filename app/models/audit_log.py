@@ -49,6 +49,9 @@ class AuditAction(Enum):
     WAITLIST_JOIN = 'waitlist_join'
     WAITLIST_LEAVE = 'waitlist_leave'
     WAITLIST_CLAIM = 'waitlist_claim'
+    WAITLIST_NOTIFY = 'waitlist_notify'
+    WAITLIST_EXPIRE = 'waitlist_expire'
+    WAITLIST_CANCEL = 'waitlist_cancel'
     
     # Fine actions
     FINE_CALCULATE = 'fine_calculate'
